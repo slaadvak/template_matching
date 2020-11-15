@@ -29,11 +29,13 @@ void QCvDetectFilter::enqueue_frame(QVideoFrame* frame, int height, int width, i
 
 QCvDetectFilter::~QCvDetectFilter()
 {
+    // Send a special Frame that will stop the consumers
     for(size_t i = 0; i < consumers.size(); i++)
     {
         sq.push({0, 0, 0, 0, nullptr});
     }
 
+    // Wait for each consumers to stop
     for (auto& consumer : consumers)
     {
         consumer.join();
@@ -60,21 +62,21 @@ void QCvDetectFilter::launch_consumer_threads()
                     break;
                 }
 
-                qDebug() << "T#" << id << " on frame #" << f.id;
+                qDebug() << "T#" << id << "on frame #" << f.id;
 
-//                cv::Mat mat(f.height, f.width, CV_8UC1, f.bits);
+                cv::Mat mat(f.height, f.width, CV_8UC1, f.bits);
 
-                cv::Mat tmp(f.height, f.width, CV_8UC1, f.bits);
-                cv::Mat mat(f.height, f.width, CV_8UC3);
-                cv::cvtColor(tmp, mat, cv::COLOR_YUV2RGB_YV12);
+//                cv::Mat tmp(f.height + f.height / 2, f.width, CV_8UC1, f.bits);
+//                cv::Mat mat(f.height, f.width, CV_8UC3);
+//                cv::cvtColor(tmp, mat, cv::COLOR_YUV2RGB_YV12);
 
                 // Create filename
-                auto size = std::snprintf(nullptr, 0, FILE_NAME_FORMAT, f.id);
+                auto size = std::snprintf(nullptr, 0, OUT_FILE_FORMAT, f.id);
                 std::string filename(size + 1, '\0');
-                std::sprintf(&filename[0], FILE_NAME_FORMAT, f.id);
+                std::sprintf(&filename[0], OUT_FILE_FORMAT, f.id);
 
                 // Write file
-                if(! cv::imwrite(FILE_PATH + filename, mat))
+                if(! cv::imwrite(OUT_FILES_DIR + filename, mat))
                 {
                     qDebug() << "Error writing file " << filename.c_str();
                 }
@@ -91,6 +93,15 @@ void QCvDetectFilter::launch_consumer_threads()
     }
 }
 
+void QCvDetectFilter::load_template()
+{
+    templ = cv::imread(TEMPLATE_PATH, cv::IMREAD_GRAYSCALE);
+
+    Q_CHECK_PTR(templ.data);
+
+    qDebug() << "Loaded template: " << templ.size().width << "," << templ.size().height << "@" << templ.channels();
+}
+
 QVideoFrame QCvDetectFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceFormat &surfaceFormat, RunFlags flags)
 {
     Q_UNUSED(flags);
@@ -98,7 +109,7 @@ QVideoFrame QCvDetectFilterRunnable::run(QVideoFrame *input, const QVideoSurface
     Q_CHECK_PTR(input);
 
     static int counter = 0;
-    qDebug() << "Counter=" << counter;
+    qDebug() << "Counter:" << counter;
 
     counter += 1;
 
@@ -122,8 +133,9 @@ QVideoFrame QCvDetectFilterRunnable::run(QVideoFrame *input, const QVideoSurface
 //            cv::imwrite("img.png", tmp);
 
 
-//            filter->enqueue_frame(input, input->height(), input->width());
-            filter->enqueue_frame(input, input->height(), input->width(), input->mappedBytes());
+
+//            filter->enqueue_frame(input, input->height(), input->width(), input->mappedBytes());
+            filter->enqueue_frame(input, input->height(), input->width(), input->height() * input->width());
 
 
             //////////////////////////////////////////

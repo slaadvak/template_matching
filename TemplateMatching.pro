@@ -35,3 +35,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 INCLUDEPATH += /usr/local/include/opencv4
 #LIBS += $(shell pkg-config opencv --libs)
 LIBS += -L/usr/local/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_objdetect -lopencv_imgcodecs -lopencv_videoio
+
+QMAKE_CXXFLAGS += -O2

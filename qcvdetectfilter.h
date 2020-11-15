@@ -29,14 +29,16 @@ public:
     explicit QCvDetectFilter(QObject *parent = nullptr) : QAbstractVideoFilter(parent)
     {
         qDebug() << "Ctor QCvDetectFilter";
+        load_template();
         launch_consumer_threads();
     }
     QVideoFilterRunnable *createFilterRunnable();
     void enqueue_frame(QVideoFrame* frame, int height, int width, int size);
     ~QCvDetectFilter();
 
-    static constexpr auto FILE_PATH              {"frames/"};
-    static constexpr auto FILE_NAME_FORMAT       {"frame%04d.png"};
+    static constexpr auto TEMPLATE_PATH          {"template.png"};
+    static constexpr auto OUT_FILES_DIR          {"frames/"};
+    static constexpr auto OUT_FILE_FORMAT        {"frame%04d.png"};
     static constexpr auto CONSUMER_THREADS_COUNT {1};
 
 signals:
@@ -48,8 +50,10 @@ private:
     int frame_count{0};
     sync_queue<Frame> sq;
     std::vector<std::thread> consumers;
+    cv::Mat templ;
 
     void launch_consumer_threads(void);
+    void load_template(void);
 
 };
 

@@ -15,7 +15,7 @@ class sync_queue
     std::unique_lock<std::mutex> mlock(mutex);
     while (queue.empty())
     {
-      cond.wait(mlock);
+      cv.wait(mlock);
     }
     item = queue.front();
     queue.pop();
@@ -26,13 +26,13 @@ class sync_queue
     std::unique_lock<std::mutex> mlock(mutex);
     queue.push(item);
     mlock.unlock();
-    cond.notify_one();
+    cv.notify_one();
   }
 
  private:
   std::queue<T> queue;
   std::mutex mutex;
-  std::condition_variable cond;
+  std::condition_variable cv;
 };
 
 #endif // SYNC_QUEUE_H

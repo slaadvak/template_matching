@@ -14,8 +14,8 @@ ApplicationWindow
     CvDetectFilter
     {
         id: testFilter
-        onObjectDetected:
-        {
+//        onObjectDetected:
+//        {
 //            if((w == 0) || (h == 0))
 //            {
 //                smile.visible = false;
@@ -29,15 +29,14 @@ ApplicationWindow
 //                smile.height = r.height;
 //                smile.visible = true;
 //            }
-        }
+//        }
     }
 
     MediaPlayer
     {
         id: mediaPlayer
         source: "file:///home/vm/imagia/field.mp4"
-        autoPlay: true
-        onStopped: console.time("mediaPlayer stop!");
+//        autoPlay: true
     }
 
     ColumnLayout
